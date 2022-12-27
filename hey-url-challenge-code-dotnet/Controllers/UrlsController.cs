@@ -29,17 +29,17 @@ namespace HeyUrlChallengeCodeDotnet.Controllers
                 new()
                 {
                     ShortUrl = "ABCDE",
-                    Count = getrandom.Next(1, 10)
+                    ClickCount = getrandom.Next(1, 10)
                 },
                 new()
                 {
                     ShortUrl = "ABCDE",
-                    Count = getrandom.Next(1, 10)
+                    ClickCount = getrandom.Next(1, 10)
                 },
                 new()
                 {
                     ShortUrl = "ABCDE",
-                    Count = getrandom.Next(1, 10)
+                    ClickCount = getrandom.Next(1, 10)
                 },
             };
             model.NewUrl = new();
@@ -52,7 +52,7 @@ namespace HeyUrlChallengeCodeDotnet.Controllers
         [Route("urls/{url}")]
         public IActionResult Show(string url) => View(new ShowViewModel
         {
-            Url = new Url {ShortUrl = url, Count = getrandom.Next(1, 10)},
+            Url = new Url {ShortUrl = url, ClickCount = getrandom.Next(1, 10)},
             DailyClicks = new Dictionary<string, int>
             {
                 {"1", 13},

@@ -10,5 +10,8 @@ namespace HeyUrlChallengeCodeDotnet.Data
         }
 
         public DbSet<Url> Urls { get; set; }
+        public DbSet<DailyUrlClick> DailyUrlClicks { get; set; }
+        public DbSet<BrowseUrlClick> BrowseUrlClicks { get; set; }
+        public DbSet<PlatformUrlClick> PlatformUrlClicks { get; set; }
     }
 }
