@@ -1,10 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using hey_url_challenge_code_dotnet.Models;
+﻿using hey_url_challenge_code_dotnet.Rules.Contracts;
 using hey_url_challenge_code_dotnet.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Shyjus.BrowserDetection;
+using System;
 
 namespace HeyUrlChallengeCodeDotnet.Controllers
 {
@@ -12,37 +11,24 @@ namespace HeyUrlChallengeCodeDotnet.Controllers
     public class UrlsController : Controller
     {
         private readonly ILogger<UrlsController> _logger;
-        private static readonly Random getrandom = new Random();
+        private readonly Lazy<IUrlService> LazyUrlService;
         private readonly IBrowserDetector browserDetector;
+        private IUrlService UrlService => LazyUrlService.Value;
 
-        public UrlsController(ILogger<UrlsController> logger, IBrowserDetector browserDetector)
+        public UrlsController(ILogger<UrlsController> logger, IBrowserDetector browserDetector, Lazy<IUrlService> lazyUrlService)
         {
             this.browserDetector = browserDetector;
             _logger = logger;
+            this.LazyUrlService = lazyUrlService;
         }
 
         public IActionResult Index()
         {
-            var model = new HomeViewModel();
-            model.Urls = new List<Url>
+            TempData["baseUrl"] = $"{Request.Scheme}://{Request.Host}";
+            var model = new HomeViewModel
             {
-                new()
-                {
-                    ShortUrl = "ABCDE",
-                    ClickCount = getrandom.Next(1, 10)
-                },
-                new()
-                {
-                    ShortUrl = "ABCDE",
-                    ClickCount = getrandom.Next(1, 10)
-                },
-                new()
-                {
-                    ShortUrl = "ABCDE",
-                    ClickCount = getrandom.Next(1, 10)
-                },
+                Urls = this.UrlService.GetAll()
             };
-            model.NewUrl = new();
             return View(model);
         }
 
@@ -52,34 +38,7 @@ namespace HeyUrlChallengeCodeDotnet.Controllers
         [Route("urls/{url}")]
         public IActionResult Show(string url) => View(new ShowViewModel
         {
-            Url = new Url {ShortUrl = url, ClickCount = getrandom.Next(1, 10)},
-            DailyClicks = new Dictionary<string, int>
-            {
-                {"1", 13},
-                {"2", 2},
-                {"3", 1},
-                {"4", 7},
-                {"5", 20},
-                {"6", 18},
-                {"7", 10},
-                {"8", 20},
-                {"9", 15},
-                {"10", 5}
-            },
-            BrowseClicks = new Dictionary<string, int>
-            {
-                { "IE", 13 },
-                { "Firefox", 22 },
-                { "Chrome", 17 },
-                { "Safari", 7 },
-            },
-            PlatformClicks = new Dictionary<string, int>
-            {
-                { "Windows", 13 },
-                { "macOS", 22 },
-                { "Ubuntu", 17 },
-                { "Other", 7 },
-            }
+            Url = this.UrlService.GetByShortUrl(url)
         });
     }
 }

@@ -15,7 +15,7 @@
         </li>
         <li class="collection-item">Created May 22, 2021</li>
         <li class="collection-item">
-          Original URL: https://drive.google.com/file/d/1VdLgSSMojWFb1GRoBAFX_eXy7oX2J
+          Original URL: @Model.Url.OriginalUrl
         </li>
       </ul>
     </div>
@@ -24,7 +24,15 @@
   <div class="row">
     <div class="col s12">
       <div class="card-panel">
-        <div id="total-clicks-chart"></div>
+            @if (Model.Url.DailyUrlClick.Count  > 0)
+            {
+                <div id="total-clicks-chart"></div>
+            }
+            else
+            {
+                <span class="card-title text-darken"><b>Total clicks</b></span>
+                <div class="card-panel notice blue lighten-3 white-text">No data</div>
+            }
       </div>
     </div>
   </div>
@@ -49,14 +57,15 @@
     function drawTotalClicksChart() {
       var data = google.visualization.arrayToDataTable([
         ['day', 'clicks'],
-      ].concat(@Json.Serialize(Model.DailyClicks.Select(e => new object[] { e.Key, e.Value }))));
+      ].concat(@Json.Serialize(Model.Url.DailyUrlClick.Select(e => new object[] { e.DayNumber, e.ClickCount }))));
       var options = {
-        title: 'total clicks',
-        haxis: {
-          title: 'day of month'
+        title: 'Total clicks',
+        hAxis: {
+          title: 'day'
         },
-        vaxis: {
-          title: 'clicks'
+        vAxis: {
+          title: 'clicks',
+          minValue: 0
         }
       };
       var chart = new google.visualization.AreaChart(
@@ -67,7 +76,7 @@
     function drawBrowsersChart() {
       var data = google.visualization.arrayToDataTable([
         ['browser', 'clicks'],
-      ].concat(@Json.Serialize(Model.BrowseClicks.Select(e => new object[] { e.Key, e.Value }))));
+      ].concat(@Json.Serialize(Model.Url.BrowseUrlClick.Select(e => new object[] { e.Name, e.ClickCount }))));
       var options = {
         title: 'Browsers'
       };
@@ -79,7 +88,7 @@
     function drawPlatformsChart() {
       var data = google.visualization.arrayToDataTable([
         ['platform', 'clicks'],
-      ].concat(@Json.Serialize(Model.PlatformClicks.Select(e => new object[] { e.Key, e.Value }))));
+      ].concat(@Json.Serialize(Model.Url.PlatformUrlClick.Select(e => new object[] { e.Name, e.ClickCount }))));
       var options = {
         title: 'Platform'
       };
@@ -89,7 +98,12 @@
       chart.draw(data, options);
     }
     function drawCharts() {
-      drawTotalClicksChart();
+    @if (Model.Url.DailyUrlClick.Count > 0)
+    {
+        <text>
+            drawTotalClicksChart();
+        </text>
+    }      
       drawBrowsersChart();
       drawPlatformsChart();
     }

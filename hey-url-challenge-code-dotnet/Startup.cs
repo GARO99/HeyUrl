@@ -1,3 +1,5 @@
+using hey_url_challenge_code_dotnet.Rules.Contracts;
+using hey_url_challenge_code_dotnet.Rules.Services;
 using HeyUrlChallengeCodeDotnet.Data;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -5,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using System;
 
 namespace HeyUrlChallengeCodeDotnet
 {
@@ -23,21 +26,21 @@ namespace HeyUrlChallengeCodeDotnet
             services.AddBrowserDetection();
             services.AddControllersWithViews();
             services.AddDbContext<ApplicationContext>(options => options.UseInMemoryDatabase(databaseName: "HeyUrl"));
+            services.AddScoped<IUrlService, UrlService>()
+                .AddScoped(servicesProvider => new Lazy<IUrlService>(() => servicesProvider.GetRequiredService<IUrlService>()));
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
         public void Configure(IApplicationBuilder app, IWebHostEnvironment env)
         {
-            if (env.IsDevelopment())
+            if (!env.IsDevelopment())
             {
-                app.UseDeveloperExceptionPage();
-            }
-            else
-            {
-                app.UseExceptionHandler("/Home/Error");
                 // The default HSTS value is 30 days. You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
+            app.UseExceptionHandler("/Error/500");
+            app.UseStatusCodePagesWithRedirects("/Error/{0}");
+
             app.UseHttpsRedirection();
             app.UseStaticFiles();
 

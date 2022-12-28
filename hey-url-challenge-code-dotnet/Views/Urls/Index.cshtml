@@ -43,12 +43,22 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var url in Model.Urls)
+        @if(Model.Urls.Count() == 0)
         {
             <tr>
-                <th scope="row"><a href="https://localhost:5001/ABCDE">https://localhost:5001/ABCDE</a></th>
-                <td><a href="https://drive.google.com/file/d/1VdLgSSMojWFb1GRoBAFX_eXy7oX2J">drive.google.com/file/d/1VdLgSS...</a></td>
-                <td><!-- Please match the same format -->Feb 24, 2021</td>
+                <td colspan="5">
+                    <div class="card-panel notice blue lighten-3 white-text">No data</div>
+                </td>
+            </tr>
+        }
+        @foreach (var url in Model.Urls)
+        {
+            string currentDate = url.CreateAt.ToString("MMM dd, yyyy");
+            currentDate = currentDate.Substring(0, 1).ToUpper() + currentDate.Substring(1).ToLower();
+            <tr>
+                <th scope="row"><a href=@string.Format("/{0}", url.ShortUrl)>@TempData["baseUrl"]@string.Format("/{0}", url.ShortUrl)</a></th>
+                <td><a href="@url.OriginalUrl">@url.OriginalUrl.Substring(0, 35)...</a></td>
+                <td>@currentDate</td>
                 <td>@url.ClickCount</td>
                 <td>
                     <a href=@string.Format("/urls/{0}", url.ShortUrl)>
