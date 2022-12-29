@@ -10,8 +10,8 @@ namespace hey_url_challenge_code_dotnet.Models
         public string ShortUrl { get; set; } = null!;
         public int ClickCount { get; set; }
         public DateTime CreateAt { get; set; }
-        public virtual ICollection<DailyUrlClick> DailyUrlClick { get; set; } = new List<DailyUrlClick>();
-        public virtual ICollection<BrowseUrlClick> BrowseUrlClick { get; set; } = new List<BrowseUrlClick>();
-        public virtual ICollection<PlatformUrlClick> PlatformUrlClick { get; set; } = new List<PlatformUrlClick>();
+        public virtual ICollection<DailyUrlClick> DailyUrlClick { get; } = new List<DailyUrlClick>();
+        public virtual ICollection<BrowseUrlClick> BrowseUrlClick { get; } = new List<BrowseUrlClick>();
+        public virtual ICollection<PlatformUrlClick> PlatformUrlClick { get; } = new List<PlatformUrlClick>();
     }
 }

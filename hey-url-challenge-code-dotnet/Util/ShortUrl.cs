@@ -6,7 +6,7 @@ namespace hey_url_challenge_code_dotnet.Util
     public static class ShortUrl
     {
         private const string CharacterPool = "ABCDEFGHIJKLMNPQRSTUVWXYZ";
-        private static Random Random = new();
+        private static readonly Random Random = new();
         private static readonly object ThreadLock = new();
 
         public static string Generated(int length)

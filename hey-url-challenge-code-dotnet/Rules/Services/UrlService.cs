@@ -1,5 +1,6 @@
 ﻿using hey_url_challenge_code_dotnet.Models;
 using hey_url_challenge_code_dotnet.Rules.Contracts;
+using hey_url_challenge_code_dotnet.Util;
 using hey_url_challenge_code_dotnet.Util.Exceptions;
 using HeyUrlChallengeCodeDotnet.Data;
 using Shyjus.BrowserDetection;
@@ -25,7 +26,29 @@ namespace hey_url_challenge_code_dotnet.Rules.Services
 
         public Url Create(string url)
         {
-            throw new System.NotImplementedException();
+            if (this.DbContext.Urls.FirstOrDefault(u => u.OriginalUrl == url) != null)
+            {
+                throw new HeyUrlException("Long URL already registered");
+            }
+            string shortUrl = ShortUrl.Generated(length: 5);
+            while (this.DbContext.Urls.FirstOrDefault(u => u.ShortUrl == shortUrl) != null)
+            {
+                shortUrl = ShortUrl.Generated(length: 5);
+            }
+            this.DbContext.Urls.Add(new()
+            {
+                OriginalUrl = url,
+                ShortUrl = shortUrl,
+                ClickCount = 0,
+                CreateAt = DateTime.Now
+            });
+            this.DbContext.SaveChanges();
+            Url newUrl = this.DbContext.Urls.FirstOrDefault(u => u.ShortUrl == shortUrl);
+            this.DbContext.Entry(newUrl).Collection(c => c.DailyUrlClick).Load();
+            this.DbContext.Entry(newUrl).Collection(c => c.BrowseUrlClick).Load();
+            this.DbContext.Entry(newUrl).Collection(c => c.PlatformUrlClick).Load();
+
+            return newUrl;
         }
 
         public ICollection<Url> GetAll()
