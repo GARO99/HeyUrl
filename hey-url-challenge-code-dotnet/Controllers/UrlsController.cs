@@ -1,4 +1,5 @@
 ﻿using hey_url_challenge_code_dotnet.Rules.Contracts;
+using hey_url_challenge_code_dotnet.Util.Exceptions;
 using hey_url_challenge_code_dotnet.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -36,9 +37,24 @@ namespace HeyUrlChallengeCodeDotnet.Controllers
         public IActionResult Visit(string url) => new OkObjectResult($"{url}, {this.browserDetector.Browser.OS}, {this.browserDetector.Browser.Name}");
 
         [Route("urls/{url}")]
-        public IActionResult Show(string url) => View(new ShowViewModel
+        public IActionResult Show(string url)
         {
-            Url = this.UrlService.GetByShortUrl(url)
-        });
+            try
+            {
+                var model = new ShowViewModel
+                {
+                    Url = this.UrlService.GetByShortUrl(url)
+                };
+
+                return View(model);
+            }
+            catch (HeyUrlException ex)
+            {
+                TempData["heyUrlError"] = ex.Message;
+                return View();
+            }
+            
+            
+        }
     }
 }

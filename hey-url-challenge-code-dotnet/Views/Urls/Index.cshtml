@@ -53,12 +53,12 @@
         }
         @foreach (var url in Model.Urls)
         {
-            string currentDate = url.CreateAt.ToString("MMM dd, yyyy");
-            currentDate = currentDate.Substring(0, 1).ToUpper() + currentDate.Substring(1).ToLower();
+            string createAtDate = url.CreateAt.ToString("MMM dd, yyyy");
+            createAtDate = createAtDate.Substring(0, 1).ToUpper() + createAtDate.Substring(1).ToLower();
             <tr>
                 <th scope="row"><a href=@string.Format("/{0}", url.ShortUrl)>@TempData["baseUrl"]@string.Format("/{0}", url.ShortUrl)</a></th>
                 <td><a href="@url.OriginalUrl">@url.OriginalUrl.Substring(0, 35)...</a></td>
-                <td>@currentDate</td>
+                <td>@createAtDate</td>
                 <td>@url.ClickCount</td>
                 <td>
                     <a href=@string.Format("/urls/{0}", url.ShortUrl)>

@@ -1,5 +1,6 @@
 ﻿using hey_url_challenge_code_dotnet.Models;
 using hey_url_challenge_code_dotnet.Rules.Contracts;
+using hey_url_challenge_code_dotnet.Util.Exceptions;
 using HeyUrlChallengeCodeDotnet.Data;
 using Shyjus.BrowserDetection;
 using System;
@@ -45,7 +46,7 @@ namespace hey_url_challenge_code_dotnet.Rules.Services
             Url url = this.DbContext.Urls.FirstOrDefault(u => u.ShortUrl == shortUrl);
             if (url == null)
             {
-                throw new Exception("The Url you are looking for does not exist");
+                throw new HeyUrlException("The Url you are looking for does not exist");
             }
             this.DbContext.Entry(url).Reference(u => u.DailyUrlClick).Load();
             this.DbContext.Entry(url).Reference(u => u.BrowseUrlClick).Load();
