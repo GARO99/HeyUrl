@@ -26,11 +26,31 @@ namespace HeyUrlChallengeCodeDotnet.Controllers
         public IActionResult Index()
         {
             TempData["baseUrl"] = $"{Request.Scheme}://{Request.Host}";
-            var model = new HomeViewModel
+            return View(new HomeViewModel { Urls = this.UrlService.GetAll() });
+        }
+
+        [Route("urls/create")]
+        public IActionResult Create([FromForm] string url)
+        {
+            try
             {
-                Urls = this.UrlService.GetAll()
-            };
-            return View(model);
+                if (Uri.TryCreate(url, UriKind.Absolute, out Uri uriResult) 
+                    && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
+                {
+                    this.UrlService.Create(url);
+                    return View("index", new HomeViewModel { Urls = this.UrlService.GetAll() });
+                }
+                else
+                {
+                    TempData["heyUrlError"] = "Submited url is invalid";
+                    return View("index", new HomeViewModel { Urls = this.UrlService.GetAll() });
+                }
+            }
+            catch (Exception ex)
+            {
+                TempData["heyUrlError"] = ex.Message;
+                return View("index", new HomeViewModel { Urls = this.UrlService.GetAll() });
+            }
         }
 
         [Route("/{url}")]

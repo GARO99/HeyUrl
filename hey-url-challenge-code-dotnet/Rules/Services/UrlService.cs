@@ -56,9 +56,9 @@ namespace hey_url_challenge_code_dotnet.Rules.Services
             ICollection<Url> urls = this.DbContext.Urls.ToList();
             foreach (Url url in urls)
             {
-                this.DbContext.Entry(url).Reference(u => u.DailyUrlClick).Load();
-                this.DbContext.Entry(url).Reference(u => u.BrowseUrlClick).Load();
-                this.DbContext.Entry(url).Reference(u => u.PlatformUrlClick).Load();
+                this.DbContext.Entry(url).Collection(u => u.DailyUrlClick).Load();
+                this.DbContext.Entry(url).Collection(u => u.BrowseUrlClick).Load();
+                this.DbContext.Entry(url).Collection(u => u.PlatformUrlClick).Load();
             }
 
             return urls;
@@ -71,9 +71,9 @@ namespace hey_url_challenge_code_dotnet.Rules.Services
             {
                 throw new HeyUrlException("The Url you are looking for does not exist");
             }
-            this.DbContext.Entry(url).Reference(u => u.DailyUrlClick).Load();
-            this.DbContext.Entry(url).Reference(u => u.BrowseUrlClick).Load();
-            this.DbContext.Entry(url).Reference(u => u.PlatformUrlClick).Load();
+            this.DbContext.Entry(url).Collection(u => u.DailyUrlClick).Load();
+            this.DbContext.Entry(url).Collection(u => u.BrowseUrlClick).Load();
+            this.DbContext.Entry(url).Collection(u => u.PlatformUrlClick).Load();
 
             return url;
         }

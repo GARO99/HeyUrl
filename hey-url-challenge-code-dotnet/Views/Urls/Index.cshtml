@@ -4,9 +4,12 @@
     ViewData["Title"] = "Home Page";
 }
 
-@if (TempData["Notice"] is not null)
+@if (TempData["heyUrlError"] is not null)
 {
-    <div class="card-panel notice deep-orange">@TempData["Notice"]</div>
+    <div id="erroMessage" class="card-panel notice yellow darken-3 white-text center-align ">
+        <h5>@TempData["heyUrlError"]</h5>
+    </div>
+    TempData["heyUrlError"] = null;
 }
 
 <div class="row">
@@ -21,7 +24,7 @@
                     </div>
                     <div class="row">
                         <div class="col m6 offset-m2">
-                            <input type="text" class="validate form-control" placeholder="Your original URL here"/>
+                            <input name="Url" type="text" class="validate form-control" placeholder="Your original URL here"/>
                         </div>
                         <div class="col m2">
                             <button type="submit" class="btn">Shorten URL</button>
@@ -71,3 +74,11 @@
         }
     </tbody>
 </table>
+<script>
+    var element = document.querySelector("#erroMessage");
+    if (element) {
+        setTimeout(() => {
+            element.style.display = "none";
+        }, 5000);
+    }
+</script>

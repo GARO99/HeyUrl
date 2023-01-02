@@ -2,8 +2,12 @@
 @{
     ViewBag.Title = "Show";
     Layout = "_Layout";
-    string createAtDate = Model.Url.CreateAt.ToString("MMM dd, yyyy");
-    createAtDate = createAtDate.Substring(0, 1).ToUpper() + createAtDate.Substring(1).ToLower();
+    string createAtDate = "";
+    if (Model != null)
+    {
+        createAtDate = Model.Url.CreateAt.ToString("MMM dd, yyyy");
+        createAtDate = createAtDate.Substring(0, 1).ToUpper() + createAtDate.Substring(1).ToLower();
+    }
 }
 
 <div class="row">
@@ -18,7 +22,7 @@
                     <div class="card-panel notice yellow darken-3 white-text">@TempData["heyUrlError"]</div>
                 </li>
             </ul>
-           
+            TempData["heyUrlError"] = null;
         }else{
             <ul class="card-panel collection with-header">
                 <li class="collection-header">
