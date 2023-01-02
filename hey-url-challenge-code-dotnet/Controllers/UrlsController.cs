@@ -38,7 +38,7 @@ namespace HeyUrlChallengeCodeDotnet.Controllers
                 TempData["baseUrl"] = $"{Request.Scheme}://{Request.Host}";
                 return View("index", new HomeViewModel { Urls = this.UrlService.GetAll() });
             }
-            catch (Exception ex)
+            catch (HeyUrlException ex)
             {
                 TempData["heyUrlError"] = ex.Message;
                 return View("index", new HomeViewModel { Urls = this.UrlService.GetAll() });
@@ -46,7 +46,18 @@ namespace HeyUrlChallengeCodeDotnet.Controllers
         }
 
         [Route("/{url}")]
-        public IActionResult Visit(string url) => new OkObjectResult($"{url}, {this.browserDetector.Browser.OS}, {this.browserDetector.Browser.Name}");
+        public IActionResult Visit(string url)
+        {
+            try
+            {
+                return new OkObjectResult($"{url}, {this.browserDetector.Browser.OS}, {this.browserDetector.Browser.Name}");
+            }
+            catch (HeyUrlException ex)
+            {
+                TempData["heyUrlError"] = ex.Message;
+                return View("index", new HomeViewModel { Urls = this.UrlService.GetAll() });
+            }
+        }
 
         [Route("urls/{url}")]
         public IActionResult Show(string url)

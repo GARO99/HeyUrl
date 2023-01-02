@@ -19,9 +19,77 @@ namespace hey_url_challenge_code_dotnet.Rules.Services
             this.DbContext = dbContext;
         }
 
-        public Url AddClick(IBrowserDetector browserDetector, string url)
+        public void AddClick(IBrowserDetector browserDetector, string url)
         {
-            throw new System.NotImplementedException();
+            Url urlRegister = this.DbContext.Urls.FirstOrDefault(u => u.OriginalUrl == url);
+            if (urlRegister == null)
+            {
+                throw new HeyUrlException("URL dosen't exist");
+            }
+            this.AddDailyUrlClick(urlRegister.Id);
+            this.AddPlatformClick(urlRegister.Id, browserDetector.Browser.OS);
+            this.AddBrowseClick(urlRegister.Id, browserDetector.Browser.Name);
+        }
+
+        private void AddDailyUrlClick(Guid urlId)
+        {
+            DailyUrlClick dailyUrlClick = this.DbContext.DailyUrlClicks.FirstOrDefault(d => d.UrlId == urlId && d.CreateAt == DateTime.Now);
+            if (dailyUrlClick != null)
+            {
+                dailyUrlClick.ClickCount++;
+                this.DbContext.SaveChanges();
+            }
+            else
+            {
+                this.DbContext.DailyUrlClicks.Add(new DailyUrlClick
+                {
+                    UrlId = urlId,
+                    ClickCount = 1,
+                    DayNumber = this.DbContext.DailyUrlClicks.Max(p => p.DayNumber) + 1,
+                    CreateAt = DateTime.Now
+                });
+                this.DbContext.SaveChanges();
+            }
+        }
+
+        private void AddPlatformClick(Guid urlId, string paltformName)
+        {
+            PlatformUrlClick platformUrlClick = this.DbContext.PlatformUrlClicks.FirstOrDefault(p => p.UrlId == urlId && p.Name == paltformName);
+            if (platformUrlClick != null)
+            {
+                platformUrlClick.ClickCount++;
+                this.DbContext.SaveChanges();
+            }
+            else
+            {
+                this.DbContext.PlatformUrlClicks.Add(new PlatformUrlClick
+                {
+                    UrlId = urlId,
+                    ClickCount = 1,
+                    Name = paltformName,
+                });
+                this.DbContext.SaveChanges();
+            }
+        }
+
+        private void AddBrowseClick(Guid urlId, string browserName)
+        {
+            BrowseUrlClick browseUrlClick = this.DbContext.BrowseUrlClicks.FirstOrDefault(b => b.UrlId == urlId && b.Name == browserName);
+            if (browseUrlClick != null) 
+            {
+                browseUrlClick.ClickCount++;
+                this.DbContext.SaveChanges();
+            }
+            else
+            {
+                this.DbContext.BrowseUrlClicks.Add(new BrowseUrlClick
+                {
+                    UrlId = urlId,
+                    ClickCount = 1,
+                    Name = browserName,
+                });
+                this.DbContext.SaveChanges();
+            }
         }
 
         public Url Create(string url)
