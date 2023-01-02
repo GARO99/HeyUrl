@@ -26,29 +26,37 @@ namespace hey_url_challenge_code_dotnet.Rules.Services
 
         public Url Create(string url)
         {
-            if (this.DbContext.Urls.FirstOrDefault(u => u.OriginalUrl == url) != null)
+            if (Uri.TryCreate(url, UriKind.Absolute, out Uri uriResult)
+                    && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
             {
-                throw new HeyUrlException("Long URL already registered");
-            }
-            string shortUrl = ShortUrl.Generated(length: 5);
-            while (this.DbContext.Urls.FirstOrDefault(u => u.ShortUrl == shortUrl) != null)
-            {
-                shortUrl = ShortUrl.Generated(length: 5);
-            }
-            this.DbContext.Urls.Add(new()
-            {
-                OriginalUrl = url,
-                ShortUrl = shortUrl,
-                ClickCount = 0,
-                CreateAt = DateTime.Now
-            });
-            this.DbContext.SaveChanges();
-            Url newUrl = this.DbContext.Urls.FirstOrDefault(u => u.ShortUrl == shortUrl);
-            this.DbContext.Entry(newUrl).Collection(c => c.DailyUrlClick).Load();
-            this.DbContext.Entry(newUrl).Collection(c => c.BrowseUrlClick).Load();
-            this.DbContext.Entry(newUrl).Collection(c => c.PlatformUrlClick).Load();
+                if (this.DbContext.Urls.FirstOrDefault(u => u.OriginalUrl == url) != null)
+                {
+                    throw new HeyUrlException("Long URL already registered");
+                }
+                string shortUrl = ShortUrl.Generated(length: 5);
+                while (this.DbContext.Urls.FirstOrDefault(u => u.ShortUrl == shortUrl) != null)
+                {
+                    shortUrl = ShortUrl.Generated(length: 5);
+                }
+                this.DbContext.Urls.Add(new()
+                {
+                    OriginalUrl = url,
+                    ShortUrl = shortUrl,
+                    ClickCount = 0,
+                    CreateAt = DateTime.Now
+                });
+                this.DbContext.SaveChanges();
+                Url newUrl = this.DbContext.Urls.FirstOrDefault(u => u.ShortUrl == shortUrl);
+                this.DbContext.Entry(newUrl).Collection(c => c.DailyUrlClick).Load();
+                this.DbContext.Entry(newUrl).Collection(c => c.BrowseUrlClick).Load();
+                this.DbContext.Entry(newUrl).Collection(c => c.PlatformUrlClick).Load();
 
-            return newUrl;
+                return newUrl;
+            }
+            else
+            {
+                throw new HeyUrlException("Submited url is invalid");
+            }
         }
 
         public ICollection<Url> GetAll()

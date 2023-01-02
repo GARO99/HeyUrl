@@ -34,17 +34,9 @@ namespace HeyUrlChallengeCodeDotnet.Controllers
         {
             try
             {
-                if (Uri.TryCreate(url, UriKind.Absolute, out Uri uriResult) 
-                    && (uriResult.Scheme == Uri.UriSchemeHttp || uriResult.Scheme == Uri.UriSchemeHttps))
-                {
-                    this.UrlService.Create(url);
-                    return View("index", new HomeViewModel { Urls = this.UrlService.GetAll() });
-                }
-                else
-                {
-                    TempData["heyUrlError"] = "Submited url is invalid";
-                    return View("index", new HomeViewModel { Urls = this.UrlService.GetAll() });
-                }
+                this.UrlService.Create(url);
+                TempData["baseUrl"] = $"{Request.Scheme}://{Request.Host}";
+                return View("index", new HomeViewModel { Urls = this.UrlService.GetAll() });
             }
             catch (Exception ex)
             {
