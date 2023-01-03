@@ -1,10 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using hey_url_challenge_code_dotnet.Models;
+﻿using hey_url_challenge_code_dotnet.Models;
+using hey_url_challenge_code_dotnet.Rules.Contracts;
+using hey_url_challenge_code_dotnet.Util.Exceptions;
 using hey_url_challenge_code_dotnet.ViewModels;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
 using Shyjus.BrowserDetection;
+using System;
 
 namespace HeyUrlChallengeCodeDotnet.Controllers
 {
@@ -12,74 +13,72 @@ namespace HeyUrlChallengeCodeDotnet.Controllers
     public class UrlsController : Controller
     {
         private readonly ILogger<UrlsController> _logger;
-        private static readonly Random getrandom = new Random();
+        private readonly Lazy<IUrlService> LazyUrlService;
         private readonly IBrowserDetector browserDetector;
+        private IUrlService UrlService => LazyUrlService.Value;
 
-        public UrlsController(ILogger<UrlsController> logger, IBrowserDetector browserDetector)
+        public UrlsController(ILogger<UrlsController> logger, IBrowserDetector browserDetector, Lazy<IUrlService> lazyUrlService)
         {
             this.browserDetector = browserDetector;
             _logger = logger;
+            this.LazyUrlService = lazyUrlService;
         }
 
         public IActionResult Index()
         {
-            var model = new HomeViewModel();
-            model.Urls = new List<Url>
+            TempData["baseUrl"] = $"{Request.Scheme}://{Request.Host}";
+            return View(new HomeViewModel { Urls = this.UrlService.GetAll() });
+        }
+
+        [Route("urls/create")]
+        public IActionResult Create([FromForm] string url)
+        {
+            try
             {
-                new()
-                {
-                    ShortUrl = "ABCDE",
-                    Count = getrandom.Next(1, 10)
-                },
-                new()
-                {
-                    ShortUrl = "ABCDE",
-                    Count = getrandom.Next(1, 10)
-                },
-                new()
-                {
-                    ShortUrl = "ABCDE",
-                    Count = getrandom.Next(1, 10)
-                },
-            };
-            model.NewUrl = new();
-            return View(model);
+                this.UrlService.Create(url);
+                TempData["baseUrl"] = $"{Request.Scheme}://{Request.Host}";
+                return View("index", new HomeViewModel { Urls = this.UrlService.GetAll() });
+            }
+            catch (HeyUrlException ex)
+            {
+                TempData["heyUrlError"] = ex.Message;
+                return View("index", new HomeViewModel { Urls = this.UrlService.GetAll() });
+            }
         }
 
         [Route("/{url}")]
-        public IActionResult Visit(string url) => new OkObjectResult($"{url}, {this.browserDetector.Browser.OS}, {this.browserDetector.Browser.Name}");
+        public IActionResult Visit(string url)
+        {
+            try
+            {
+                Url urlToRedirect = this.UrlService.AddClick(browserDetector, url);
+                return Redirect(urlToRedirect.OriginalUrl);
+            }
+            catch (HeyUrlException)
+            {
+                return RedirectToAction("Error", new { id = 404 });
+            }
+        }
 
         [Route("urls/{url}")]
-        public IActionResult Show(string url) => View(new ShowViewModel
+        public IActionResult Show(string url)
         {
-            Url = new Url {ShortUrl = url, Count = getrandom.Next(1, 10)},
-            DailyClicks = new Dictionary<string, int>
+            try
             {
-                {"1", 13},
-                {"2", 2},
-                {"3", 1},
-                {"4", 7},
-                {"5", 20},
-                {"6", 18},
-                {"7", 10},
-                {"8", 20},
-                {"9", 15},
-                {"10", 5}
-            },
-            BrowseClicks = new Dictionary<string, int>
-            {
-                { "IE", 13 },
-                { "Firefox", 22 },
-                { "Chrome", 17 },
-                { "Safari", 7 },
-            },
-            PlatformClicks = new Dictionary<string, int>
-            {
-                { "Windows", 13 },
-                { "macOS", 22 },
-                { "Ubuntu", 17 },
-                { "Other", 7 },
+                var model = new ShowViewModel
+                {
+                    Url = this.UrlService.GetByShortUrl(url)
+                };
+
+                return View(model);
             }
-        });
+            catch (HeyUrlException ex)
+            {
+                TempData["heyUrlError"] = ex.Message;
+                return View();
+            }
+            
+            
+        }
     }
 }

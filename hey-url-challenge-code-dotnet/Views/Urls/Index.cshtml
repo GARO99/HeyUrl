@@ -4,9 +4,12 @@
     ViewData["Title"] = "Home Page";
 }
 
-@if (TempData["Notice"] is not null)
+@if (TempData["heyUrlError"] is not null)
 {
-    <div class="card-panel notice deep-orange">@TempData["Notice"]</div>
+    <div id="erroMessage" class="card-panel notice yellow darken-3 white-text center-align ">
+        <h5>@TempData["heyUrlError"]</h5>
+    </div>
+    TempData["heyUrlError"] = null;
 }
 
 <div class="row">
@@ -21,7 +24,7 @@
                     </div>
                     <div class="row">
                         <div class="col m6 offset-m2">
-                            <input type="text" class="validate form-control" placeholder="Your original URL here"/>
+                            <input name="Url" type="text" class="validate form-control" placeholder="Your original URL here"/>
                         </div>
                         <div class="col m2">
                             <button type="submit" class="btn">Shorten URL</button>
@@ -43,13 +46,23 @@
         </tr>
     </thead>
     <tbody>
-        @foreach (var url in Model.Urls)
+        @if(Model.Urls.Count() == 0)
         {
             <tr>
-                <th scope="row"><a href="https://localhost:5001/ABCDE">https://localhost:5001/ABCDE</a></th>
-                <td><a href="https://drive.google.com/file/d/1VdLgSSMojWFb1GRoBAFX_eXy7oX2J">drive.google.com/file/d/1VdLgSS...</a></td>
-                <td><!-- Please match the same format -->Feb 24, 2021</td>
-                <td>@url.Count</td>
+                <td colspan="5">
+                    <div class="card-panel notice blue lighten-3 white-text">No data</div>
+                </td>
+            </tr>
+        }
+        @foreach (var url in Model.Urls)
+        {
+            string createAtDate = url.CreateAt.ToString("MMM dd, yyyy");
+            createAtDate = createAtDate.Substring(0, 1).ToUpper() + createAtDate.Substring(1).ToLower();
+            <tr>
+                <th scope="row"><a href=@string.Format("/{0}", url.ShortUrl)>@TempData["baseUrl"]@string.Format("/{0}", url.ShortUrl)</a></th>
+                <td><a href="@url.OriginalUrl">@(url.OriginalUrl.Length > 35?url.OriginalUrl.Substring(0, 35) + "...": url.OriginalUrl)</a></td>
+                <td>@createAtDate</td>
+                <td>@url.ClickCount</td>
                 <td>
                     <a href=@string.Format("/urls/{0}", url.ShortUrl)>
                         <svg class="octicon octicon-graph" viewBox="0 0 16 16" version="1.1" width="16" height="16" aria-hidden="true">
@@ -61,3 +74,11 @@
         }
     </tbody>
 </table>
+<script>
+    var element = document.querySelector("#erroMessage");
+    if (element) {
+        setTimeout(() => {
+            element.style.display = "none";
+        }, 5000);
+    }
+</script>
