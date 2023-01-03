@@ -9,6 +9,6 @@ namespace hey_url_challenge_code_dotnet.Rules.Contracts
         ICollection<Url> GetAll();
         Url GetByShortUrl(string shortUrl);
         Url Create(string url);
-        void AddClick(IBrowserDetector browserDetector, string url);
+        Url AddClick(IBrowserDetector browserDetector, string url);
     }
 }

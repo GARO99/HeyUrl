@@ -19,36 +19,46 @@ namespace hey_url_challenge_code_dotnet.Rules.Services
             this.DbContext = dbContext;
         }
 
-        public void AddClick(IBrowserDetector browserDetector, string url)
+        public Url AddClick(IBrowserDetector browserDetector, string url)
         {
-            Url urlRegister = this.DbContext.Urls.FirstOrDefault(u => u.OriginalUrl == url);
+            Url urlRegister = this.DbContext.Urls.FirstOrDefault(u => u.ShortUrl == url);
             if (urlRegister == null)
             {
                 throw new HeyUrlException("URL dosen't exist");
             }
+            urlRegister.ClickCount++;
             this.AddDailyUrlClick(urlRegister.Id);
             this.AddPlatformClick(urlRegister.Id, browserDetector.Browser.OS);
             this.AddBrowseClick(urlRegister.Id, browserDetector.Browser.Name);
+            this.DbContext.SaveChanges();
+            this.DbContext.Entry(urlRegister).Collection(c => c.DailyUrlClick).Load();
+            this.DbContext.Entry(urlRegister).Collection(c => c.BrowseUrlClick).Load();
+            this.DbContext.Entry(urlRegister).Collection(c => c.PlatformUrlClick).Load();
+
+            return urlRegister;
         }
 
         private void AddDailyUrlClick(Guid urlId)
         {
-            DailyUrlClick dailyUrlClick = this.DbContext.DailyUrlClicks.FirstOrDefault(d => d.UrlId == urlId && d.CreateAt == DateTime.Now);
+            DailyUrlClick dailyUrlClick = this.DbContext.DailyUrlClicks.FirstOrDefault(d => d.UrlId == urlId && d.CreateAt.Date == DateTime.Now.Date);
             if (dailyUrlClick != null)
             {
                 dailyUrlClick.ClickCount++;
-                this.DbContext.SaveChanges();
             }
             else
             {
+                int lastDay = 0;
+                if (this.DbContext.DailyUrlClicks.Any())
+                {
+                    lastDay = this.DbContext.DailyUrlClicks.Max(p => p.DayNumber);
+                }
                 this.DbContext.DailyUrlClicks.Add(new DailyUrlClick
                 {
                     UrlId = urlId,
                     ClickCount = 1,
-                    DayNumber = this.DbContext.DailyUrlClicks.Max(p => p.DayNumber) + 1,
+                    DayNumber = lastDay + 1,
                     CreateAt = DateTime.Now
                 });
-                this.DbContext.SaveChanges();
             }
         }
 
@@ -58,7 +68,6 @@ namespace hey_url_challenge_code_dotnet.Rules.Services
             if (platformUrlClick != null)
             {
                 platformUrlClick.ClickCount++;
-                this.DbContext.SaveChanges();
             }
             else
             {
@@ -68,7 +77,6 @@ namespace hey_url_challenge_code_dotnet.Rules.Services
                     ClickCount = 1,
                     Name = paltformName,
                 });
-                this.DbContext.SaveChanges();
             }
         }
 
@@ -78,7 +86,6 @@ namespace hey_url_challenge_code_dotnet.Rules.Services
             if (browseUrlClick != null) 
             {
                 browseUrlClick.ClickCount++;
-                this.DbContext.SaveChanges();
             }
             else
             {
@@ -88,7 +95,6 @@ namespace hey_url_challenge_code_dotnet.Rules.Services
                     ClickCount = 1,
                     Name = browserName,
                 });
-                this.DbContext.SaveChanges();
             }
         }
 

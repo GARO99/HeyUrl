@@ -1,4 +1,5 @@
-﻿using hey_url_challenge_code_dotnet.Rules.Contracts;
+﻿using hey_url_challenge_code_dotnet.Models;
+using hey_url_challenge_code_dotnet.Rules.Contracts;
 using hey_url_challenge_code_dotnet.Util.Exceptions;
 using hey_url_challenge_code_dotnet.ViewModels;
 using Microsoft.AspNetCore.Mvc;
@@ -50,12 +51,12 @@ namespace HeyUrlChallengeCodeDotnet.Controllers
         {
             try
             {
-                return new OkObjectResult($"{url}, {this.browserDetector.Browser.OS}, {this.browserDetector.Browser.Name}");
+                Url urlToRedirect = this.UrlService.AddClick(browserDetector, url);
+                return Redirect(urlToRedirect.OriginalUrl);
             }
-            catch (HeyUrlException ex)
+            catch (HeyUrlException)
             {
-                TempData["heyUrlError"] = ex.Message;
-                return View("index", new HomeViewModel { Urls = this.UrlService.GetAll() });
+                return RedirectToAction("Error", new { id = 404 });
             }
         }
 
